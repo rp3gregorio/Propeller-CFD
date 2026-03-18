@@ -64,6 +64,10 @@ class BEMTSolver:
         self.chord = self.chord_fn(self.r)
         self.twist = self.twist_fn(self.r)   # [deg]
 
+        # Derived geometry properties used by notebooks/plotting
+        self.span       = self.r_tip - self.r_hub                  # [m]
+        self.blade_area = np.trapz(self.chord, self.r)             # [m²] per blade
+
     # ──────────────────────────────────────────────────────────────────────
     # Public API
     # ──────────────────────────────────────────────────────────────────────
