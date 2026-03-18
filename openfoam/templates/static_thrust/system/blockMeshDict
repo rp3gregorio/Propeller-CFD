@@ -1,0 +1,66 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Background hex mesh for static thrust simulation.
+//
+// Domain: large cylinder 10D radius × 20D length centred on propeller
+//   D = 0.2032 m  (8-inch propeller)
+//   r_outer = 10D = 2.032 m
+//   z_half  = 10D = 2.032 m  (symmetric about propeller plane)
+//
+// The snappyHexMesh step then refines this around the STL propeller geometry.
+
+scale 1;
+
+// Cylinder approximated as a box for blockMesh simplicity.
+// snappyHexMesh handles the actual cylindrical refinement.
+
+vertices
+(
+    (-2.032 -2.032 -2.032)  // 0
+    ( 2.032 -2.032 -2.032)  // 1
+    ( 2.032  2.032 -2.032)  // 2
+    (-2.032  2.032 -2.032)  // 3
+    (-2.032 -2.032  2.032)  // 4
+    ( 2.032 -2.032  2.032)  // 5
+    ( 2.032  2.032  2.032)  // 6
+    (-2.032  2.032  2.032)  // 7
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (20 20 20) simpleGrading (1 1 1)
+);
+
+edges ();
+
+boundary
+(
+    outerDomain
+    {
+        type patch;
+        faces
+        (
+            (0 3 2 1)  // -Z face
+            (4 5 6 7)  // +Z face
+            (0 1 5 4)  // -Y face
+            (2 3 7 6)  // +Y face
+            (0 4 7 3)  // -X face
+            (1 2 6 5)  // +X face
+        );
+    }
+);
+
+mergePatchPairs ();
+
+// ************************************************************************* //

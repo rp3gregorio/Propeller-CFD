@@ -1,0 +1,89 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     simpleFoam;
+
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         1500;          // more iterations needed for wind-tunnel cases
+
+deltaT          1;
+
+writeControl    timeStep;
+writeInterval   100;
+purgeWrite      3;
+
+writeFormat     ascii;
+writePrecision  8;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable true;
+
+functions
+{
+    propellerForces
+    {
+        type            forces;
+        libs            (forces);
+        writeControl    timeStep;
+        writeInterval   10;
+
+        patches         (propeller);
+        rho             rhoInf;
+        rhoInf          1.225;
+        CofR            (0 0 0);
+
+        log             true;
+    }
+
+    residuals
+    {
+        type            solverInfo;
+        libs            (utilityFunctionObjects);
+        writeControl    timeStep;
+        writeInterval   1;
+        fields          (U p k omega);
+    }
+
+    // Streamwise velocity profile downstream of propeller
+    internalStreamwiseSamples
+    {
+        type            sets;
+        libs            (sampling);
+        writeControl    writeTime;
+
+        interpolationScheme cellPoint;
+        setFormat       csv;
+
+        sets
+        (
+            axialLine
+            {
+                type    uniform;
+                axis    z;
+                start   (0 0 -0.5);
+                end     (0 0  1.5);
+                nPoints 100;
+            }
+        );
+
+        fields ( U p );
+    }
+}
+
+// ************************************************************************* //

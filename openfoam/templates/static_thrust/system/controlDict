@@ -1,0 +1,78 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     simpleFoam;
+
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         1000;          // steady-state iterations
+
+deltaT          1;             // iteration step (pseudo-time)
+
+writeControl    timeStep;
+writeInterval   100;
+purgeWrite      3;             // keep only last 3 time directories
+
+writeFormat     ascii;
+writePrecision  8;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable true;
+
+// ─────────────────────────────────────────────────────────────────────
+// Function objects
+// ─────────────────────────────────────────────────────────────────────
+functions
+{
+    // Forces on propeller (thrust = Fz, torque = Mz)
+    propellerForces
+    {
+        type            forces;
+        libs            (forces);
+        writeControl    timeStep;
+        writeInterval   10;
+
+        patches         (propeller);
+        rho             rhoInf;
+        rhoInf          1.225;        // air density [kg/m³]
+        CofR            (0 0 0);      // centre of rotation
+
+        log             true;
+    }
+
+    // Residual monitoring
+    residuals
+    {
+        type            solverInfo;
+        libs            (utilityFunctionObjects);
+        writeControl    timeStep;
+        writeInterval   1;
+        fields          (U p k omega);
+    }
+
+    // Yplus on propeller surface
+    yPlus
+    {
+        type            yPlus;
+        libs            (fieldFunctionObjects);
+        writeControl    writeTime;
+        patches         (propeller);
+    }
+}
+
+// ************************************************************************* //

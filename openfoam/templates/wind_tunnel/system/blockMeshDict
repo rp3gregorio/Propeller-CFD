@@ -1,0 +1,78 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Background mesh for wind tunnel simulation.
+//
+// Domain: rectangular channel matching Westenberg WT 8600100-E test section
+//   Propeller at (0,0,0), flow in +Z direction
+//   X: ±2.032 m  (±10D)
+//   Y: ±2.032 m  (±10D)
+//   Z: -2.032 to +6.096 m   (10D upstream, 30D downstream)
+
+scale 1;
+
+vertices
+(
+    (-2.032 -2.032 -2.032)  // 0
+    ( 2.032 -2.032 -2.032)  // 1
+    ( 2.032  2.032 -2.032)  // 2
+    (-2.032  2.032 -2.032)  // 3
+    (-2.032 -2.032  6.096)  // 4
+    ( 2.032 -2.032  6.096)  // 5
+    ( 2.032  2.032  6.096)  // 6
+    (-2.032  2.032  6.096)  // 7
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (20 20 40) simpleGrading (1 1 1)
+);
+
+edges ();
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces
+        (
+            (0 3 2 1)
+        );
+    }
+
+    outlet
+    {
+        type patch;
+        faces
+        (
+            (4 5 6 7)
+        );
+    }
+
+    sides
+    {
+        type patch;
+        faces
+        (
+            (0 1 5 4)
+            (2 3 7 6)
+            (0 4 7 3)
+            (1 2 6 5)
+        );
+    }
+);
+
+mergePatchPairs ();
+
+// ************************************************************************* //

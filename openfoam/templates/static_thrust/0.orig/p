@@ -1,0 +1,46 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      p;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    propeller
+    {
+        type            zeroGradient;
+    }
+
+    outerDomain
+    {
+        // Fixed pressure at far-field
+        type            totalPressure;
+        p0              uniform 0;
+    }
+
+    AMI_rotating
+    {
+        type            cyclicAMI;
+        value           uniform 0;
+    }
+
+    AMI_static
+    {
+        type            cyclicAMI;
+        value           uniform 0;
+    }
+}
+
+// ************************************************************************* //
