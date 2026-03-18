@@ -1,0 +1,48 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      omega;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Specific dissipation rate [1/s]
+// Initial: omega = k^0.5 / (C_mu^0.25 * L)  with L≈D/10=0.02m, C_mu=0.09
+// → omega ≈ 0.1^0.5 / (0.09^0.25 * 0.02) ≈ 28 s^-1
+
+dimensions      [0 0 -1 0 0 0 0];
+
+internalField   uniform 30;
+
+boundaryField
+{
+    propeller
+    {
+        type            omegaWallFunction;
+        value           uniform 30;
+    }
+
+    outerDomain
+    {
+        type            zeroGradient;
+    }
+
+    AMI_rotating
+    {
+        type            cyclicAMI;
+        value           uniform 30;
+    }
+
+    AMI_static
+    {
+        type            cyclicAMI;
+        value           uniform 30;
+    }
+}
+
+// ************************************************************************* //

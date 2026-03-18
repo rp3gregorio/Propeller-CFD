@@ -1,0 +1,49 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Static thrust test: no freestream (V_inf = 0)
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    propeller
+    {
+        // No-slip wall on propeller surface
+        type            noSlip;
+    }
+
+    outerDomain
+    {
+        // Free slip on far-field boundaries
+        type            slip;
+    }
+
+    AMI_rotating
+    {
+        type            cyclicAMI;
+        value           uniform (0 0 0);
+    }
+
+    AMI_static
+    {
+        type            cyclicAMI;
+        value           uniform (0 0 0);
+    }
+}
+
+// ************************************************************************* //

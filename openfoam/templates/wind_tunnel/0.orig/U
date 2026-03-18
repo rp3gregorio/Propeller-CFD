@@ -1,0 +1,59 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Wind tunnel test: freestream V_INF_MS m/s in +Z direction
+// V_INF_MS is substituted by setup_case.py  (3, 9, or 15 m/s)
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 V_INF_MS);
+
+boundaryField
+{
+    propeller
+    {
+        type            noSlip;
+    }
+
+    inlet
+    {
+        type            fixedValue;
+        value           uniform (0 0 V_INF_MS);
+    }
+
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform (0 0 V_INF_MS);
+        value           uniform (0 0 V_INF_MS);
+    }
+
+    sides
+    {
+        type            slip;
+    }
+
+    AMI_rotating
+    {
+        type            cyclicAMI;
+        value           uniform (0 0 V_INF_MS);
+    }
+
+    AMI_static
+    {
+        type            cyclicAMI;
+        value           uniform (0 0 V_INF_MS);
+    }
+}
+
+// ************************************************************************* //

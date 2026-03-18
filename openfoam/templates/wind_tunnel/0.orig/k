@@ -1,0 +1,48 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      k;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Turbulent kinetic energy [m²/s²]
+// Initial value: k = 1.5*(I*U_ref)^2  with I=5%, U_ref=tip_speed≈72 m/s (6000rpm)
+// → k ≈ 1.5*(0.05*72)^2 = 19.4 m²/s²  (conservative initial condition)
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform 0.1;
+
+boundaryField
+{
+    propeller
+    {
+        type            kqRWallFunction;
+        value           uniform 0.1;
+    }
+
+    outerDomain
+    {
+        type            zeroGradient;
+    }
+
+    AMI_rotating
+    {
+        type            cyclicAMI;
+        value           uniform 0.1;
+    }
+
+    AMI_static
+    {
+        type            cyclicAMI;
+        value           uniform 0.1;
+    }
+}
+
+// ************************************************************************* //

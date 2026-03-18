@@ -1,0 +1,145 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      snappyHexMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Mesh refinement around the propeller STL surface.
+// STL file must be in constant/triSurface/propeller.stl
+
+castellatedMesh true;
+snap            true;
+addLayers       true;
+
+geometry
+{
+    propeller.stl
+    {
+        type triSurfaceMesh;
+        name propeller;
+    }
+
+    // Inner rotating cylinder for MRF zone
+    rotatingCylinder
+    {
+        type searchableCylinder;
+        point1 (0 0 -0.18);   // -z edge  (slightly larger than propeller)
+        point2 (0 0  0.18);   // +z edge
+        radius  0.16;         // 1.6 × r_tip = 1.6 × 0.1016 ≈ 0.163 m
+    }
+}
+
+castellatedMeshControls
+{
+    maxLocalCells       1000000;
+    maxGlobalCells      5000000;
+    minRefinementCells  10;
+    maxLoadUnbalance    0.10;
+    nCellsBetweenLevels 2;
+
+    features ();   // no explicit feature edges — snappy detects from STL
+
+    refinementSurfaces
+    {
+        propeller
+        {
+            level (5 7);              // min/max refinement (cell size ≈ D/2^level)
+            patchInfo
+            {
+                type wall;
+                inGroups (propellerGroup);
+            }
+        }
+    }
+
+    refinementRegions
+    {
+        rotatingCylinder
+        {
+            mode inside;
+            levels ((1E15 3));        // level 3 everywhere inside the MRF zone
+        }
+
+        propeller
+        {
+            mode distance;
+            levels ((0.005 6) (0.020 5) (0.060 4));  // distance-based refinement
+        }
+    }
+
+    locationInMesh (0.5 0.5 0.5);   // a point guaranteed to be in the fluid domain
+    allowFreeStandingZoneFaces true;
+}
+
+snapControls
+{
+    nSmoothPatch    5;
+    tolerance       1.0;
+    nSolveIter      100;
+    nRelaxIter      5;
+    nFeatureSnapIter 10;
+}
+
+addLayersControls
+{
+    relativeSizes    true;
+    expansionRatio   1.2;
+    finalLayerThickness 0.3;
+    minThickness     0.1;
+    nGrow            0;
+
+    featureAngle     60;
+    nRelaxIter       5;
+    nSmoothSurfaceNormals 1;
+    nSmoothNormals   3;
+    nSmoothThickness 10;
+    maxFaceThicknessRatio 0.5;
+    maxThicknessToMedialRatio 0.3;
+    minMedialAxisAngle 90;
+
+    nBufferCellsNoExtrude 0;
+    nLayerIter       50;
+
+    layers
+    {
+        propeller
+        {
+            nSurfaceLayers 5;
+        }
+    }
+}
+
+meshQualityControls
+{
+    maxNonOrtho         65;
+    maxBoundarySkewness 20;
+    maxInternalSkewness 4;
+    maxConcave          80;
+    minVol              1e-13;
+    minTetQuality       1e-15;
+    minArea             -1;
+    minTwist            0.01;
+    minDeterminant      0.001;
+    minFaceWeight       0.05;
+    minVolRatio         0.01;
+    minTriangleTwist    -1;
+    nSmoothScale        4;
+    errorReduction      0.75;
+}
+
+writeFlags
+(
+    scalarLevels
+    meshQuality
+);
+
+mergeTolerance 1e-6;
+
+// ************************************************************************* //
