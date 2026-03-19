@@ -1,0 +1,148 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      snappyHexMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Mesh refinement for the open-jet wind tunnel simulation.
+// STL file must be placed in constant/triSurface/propeller.stl
+
+castellatedMesh true;
+snap            true;
+addLayers       true;
+
+geometry
+{
+    propeller.stl
+    {
+        type triSurfaceMesh;
+        name propeller;
+    }
+
+    // MRF rotating zone — cylinder enclosing the propeller
+    // Sized at 1.6× tip radius (r_tip = 0.1016 m → R_zone = 0.163 m)
+    // Axial extent: ±0.18 m (slightly beyond blade chord at hub)
+    rotatingCylinder
+    {
+        type searchableCylinder;
+        point1 (0 0 -0.18);
+        point2 (0 0  0.18);
+        radius  0.163;
+    }
+}
+
+castellatedMeshControls
+{
+    maxLocalCells       1000000;
+    maxGlobalCells      5000000;
+    minRefinementCells  10;
+    maxLoadUnbalance    0.10;
+    nCellsBetweenLevels 2;
+
+    features ();
+
+    refinementSurfaces
+    {
+        propeller
+        {
+            level (5 7);
+            patchInfo
+            {
+                type wall;
+                inGroups (propellerGroup);
+            }
+        }
+    }
+
+    refinementRegions
+    {
+        rotatingCylinder
+        {
+            mode inside;
+            levels ((1E15 3));
+        }
+
+        propeller
+        {
+            mode distance;
+            levels ((0.005 6) (0.020 5) (0.050 4));
+        }
+    }
+
+    // Point guaranteed to be in the fluid domain (not inside propeller)
+    locationInMesh (0.0 0.25 0.5);
+    allowFreeStandingZoneFaces true;
+}
+
+snapControls
+{
+    nSmoothPatch    5;
+    tolerance       1.0;
+    nSolveIter      100;
+    nRelaxIter      5;
+    nFeatureSnapIter 10;
+}
+
+addLayersControls
+{
+    relativeSizes    true;
+    expansionRatio   1.2;
+    finalLayerThickness 0.3;
+    minThickness     0.1;
+    nGrow            0;
+
+    featureAngle     60;
+    nRelaxIter       5;
+    nSmoothSurfaceNormals 1;
+    nSmoothNormals   3;
+    nSmoothThickness 10;
+    maxFaceThicknessRatio 0.5;
+    maxThicknessToMedialRatio 0.3;
+    minMedialAxisAngle 90;
+
+    nBufferCellsNoExtrude 0;
+    nLayerIter       50;
+
+    layers
+    {
+        propeller
+        {
+            nSurfaceLayers 5;
+        }
+    }
+}
+
+meshQualityControls
+{
+    maxNonOrtho         65;
+    maxBoundarySkewness 20;
+    maxInternalSkewness 4;
+    maxConcave          80;
+    minVol              1e-13;
+    minTetQuality       1e-15;
+    minArea             -1;
+    minTwist            0.01;
+    minDeterminant      0.001;
+    minFaceWeight       0.05;
+    minVolRatio         0.01;
+    minTriangleTwist    -1;
+    nSmoothScale        4;
+    errorReduction      0.75;
+}
+
+writeFlags
+(
+    scalarLevels
+    meshQuality
+);
+
+mergeTolerance 1e-6;
+
+// ************************************************************************* //

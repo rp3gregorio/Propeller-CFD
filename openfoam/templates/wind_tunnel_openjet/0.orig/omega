@@ -1,0 +1,53 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      omega;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Specific dissipation rate [1/s]
+// omega = sqrt(k) / (Cmu^0.25 * L_t)  with L_t=0.03 m (~5% of jet diameter),
+// Cmu=0.09, Cmu^0.25=0.5477
+//   V=3  m/s → omega = sqrt(0.00135)/(0.5477*0.03) ≈  2.2 s^-1
+//   V=9  m/s → omega = sqrt(0.01215)/(0.5477*0.03) ≈  6.7 s^-1
+//   V=15 m/s → omega = sqrt(0.03375)/(0.5477*0.03) ≈ 11.2 s^-1
+// TURB_OMEGA is substituted by generate_case.py.
+
+dimensions      [0 0 -1 0 0 0 0];
+
+internalField   uniform TURB_OMEGA;
+
+boundaryField
+{
+    propeller
+    {
+        type            omegaWallFunction;
+        value           uniform TURB_OMEGA;
+    }
+
+    inlet
+    {
+        type            fixedValue;
+        value           uniform TURB_OMEGA;
+    }
+
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform TURB_OMEGA;
+        value           uniform TURB_OMEGA;
+    }
+
+    sides
+    {
+        type            slip;
+    }
+}
+
+// ************************************************************************* //

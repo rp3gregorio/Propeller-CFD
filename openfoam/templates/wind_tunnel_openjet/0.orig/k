@@ -1,0 +1,52 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      k;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Turbulent kinetic energy [m²/s²]
+// Inlet: k = 1.5*(TI*V_inf)^2  with TI=1% (typical subsonic wind tunnel)
+//   V=3  m/s → k = 1.5*(0.01*3)^2  = 0.00135 m²/s²
+//   V=9  m/s → k = 1.5*(0.01*9)^2  = 0.01215 m²/s²
+//   V=15 m/s → k = 1.5*(0.01*15)^2 = 0.03375 m²/s²
+// TURB_K is substituted by generate_case.py based on V_inf.
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform TURB_K;
+
+boundaryField
+{
+    propeller
+    {
+        type            kqRWallFunction;
+        value           uniform TURB_K;
+    }
+
+    inlet
+    {
+        type            fixedValue;
+        value           uniform TURB_K;
+    }
+
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform TURB_K;
+        value           uniform TURB_K;
+    }
+
+    sides
+    {
+        type            slip;
+    }
+}
+
+// ************************************************************************* //

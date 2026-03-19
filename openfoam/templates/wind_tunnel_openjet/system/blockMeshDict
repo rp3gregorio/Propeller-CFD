@@ -1,0 +1,96 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Background mesh modelling the Westenberg WT 8600100-E Eiffel-type open-jet
+// wind tunnel (used in the Palileo & Sabanal 2024 thesis experiments).
+//
+// Tunnel specs:
+//   Type     : Eiffel-type open-circuit, open-jet
+//   Jet outlet diameter : 600 mm  → radius = 0.30 m
+//   Max speed: 80 m/s
+//   Tested at: 3, 9, 15 m/s
+//
+// CFD domain (square cross-section approximating circular 600-mm jet):
+//   X : -0.30 to +0.30 m  (= D_jet / 2 each side)
+//   Y : -0.30 to +0.30 m
+//   Z : -0.50 to +1.50 m  (0.5 m upstream, 1.5 m downstream of propeller)
+//
+// Propeller (D=0.2032 m, 8-inch) at origin (0,0,0).
+// Blockage ratio: A_prop / A_section = π*(0.1016)²/(0.6²) ≈ 9%  (significant,
+// which is why matching the actual jet cross-section matters for accuracy).
+//
+// Lateral boundaries use slip to approximate the free-jet shear layer.
+// Flow is in the +Z direction.
+
+scale 1;
+
+vertices
+(
+    (-0.30 -0.30 -0.50)  // 0
+    ( 0.30 -0.30 -0.50)  // 1
+    ( 0.30  0.30 -0.50)  // 2
+    (-0.30  0.30 -0.50)  // 3
+    (-0.30 -0.30  1.50)  // 4
+    ( 0.30 -0.30  1.50)  // 5
+    ( 0.30  0.30  1.50)  // 6
+    (-0.30  0.30  1.50)  // 7
+);
+
+blocks
+(
+    // 20 x 20 x 40 = 16 000 background cells
+    // dx = 0.60/20 = 30 mm, dz_up = 0.50/10 = 50 mm, dz_down = 1.50/30 = 50 mm
+    hex (0 1 2 3 4 5 6 7) (20 20 40) simpleGrading (1 1 1)
+);
+
+edges ();
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces
+        (
+            (0 3 2 1)   // -Z face (upstream nozzle exit)
+        );
+    }
+
+    outlet
+    {
+        type patch;
+        faces
+        (
+            (4 5 6 7)   // +Z face (far downstream)
+        );
+    }
+
+    sides
+    {
+        // Slip walls approximate the free-jet shear layer boundary.
+        // In the real open-jet tunnel the air outside the jet is quiescent;
+        // slip gives a reasonable approximation for the core region.
+        type patch;
+        faces
+        (
+            (0 1 5 4)   // -Y face
+            (2 3 7 6)   // +Y face
+            (0 4 7 3)   // -X face
+            (1 2 6 5)   // +X face
+        );
+    }
+);
+
+mergePatchPairs ();
+
+// ************************************************************************* //
