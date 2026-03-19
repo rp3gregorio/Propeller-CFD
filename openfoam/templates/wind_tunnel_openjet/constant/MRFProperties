@@ -1,0 +1,35 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2212                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      MRFProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// Multiple Reference Frame (MRF) — rotating zone enclosing the propeller.
+// The inner cylinder (rotatingZone) rotates at OMEGA_RAD_S rad/s.
+//
+// NOTE: OMEGA_RAD_S is a placeholder replaced by scripts/setup_case.py
+//       based on the target RPM.
+//       Positive omega → counter-clockwise rotation viewed from downstream (+Z axis).
+
+MRF_propeller
+{
+    cellZone        rotatingZone;   // must match mesh cell zone name
+
+    active          true;
+
+    nonRotatingPatches ();           // leave empty — rotating patch is in rotatingZone
+
+    origin          (0 0 0);
+    axis            (0 0 1);         // rotation about Z axis
+
+    omega           OMEGA_RAD_S;    // [rad/s] — substituted by setup_case.py
+}
+
+// ************************************************************************* //

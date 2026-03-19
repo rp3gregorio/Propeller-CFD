@@ -42,7 +42,7 @@ STL_MAP = {
 
 def generate_case(
     config: str,
-    case_type: str,        # "static_thrust" or "wind_tunnel"
+    case_type: str,        # "static_thrust", "wind_tunnel", or "wind_tunnel_openjet"
     rpm: float,
     v_inf: float = 0.0,    # freestream velocity [m/s]
     n_procs: int = 4,
@@ -64,7 +64,7 @@ def generate_case(
         runs_dir = os.path.join(os.path.dirname(__file__), "..", "runs")
         os.makedirs(runs_dir, exist_ok=True)
         label = f"{config}_{int(rpm)}rpm_{case_type}"
-        if case_type == "wind_tunnel":
+        if case_type in ("wind_tunnel", "wind_tunnel_openjet"):
             label += f"_{int(v_inf)}ms"
         output_dir = os.path.join(runs_dir, label)
 
@@ -86,11 +86,23 @@ def generate_case(
     # Compute omega [rad/s]
     omega = rpm * 2 * math.pi / 60.0
 
+    # Turbulence inlet conditions for open-jet template (k-omega SST)
+    # TI = 1%  (typical low-turbulence subsonic wind tunnel)
+    # L_t = 0.03 m  (~5% of 600-mm jet diameter)
+    TI  = 0.01
+    L_t = 0.03
+    Cmu = 0.09
+    v_ref = max(v_inf, 1.0)   # guard against V_inf=0 (not physical for open-jet)
+    turb_k     = 1.5 * (TI * v_ref) ** 2
+    turb_omega = math.sqrt(turb_k) / (Cmu ** 0.25 * L_t)
+
     # Substitute placeholders in all text files
     substitutions = {
-        "OMEGA_RAD_S": f"{omega:.4f}",
-        "V_INF_MS"   : f"{v_inf:.4f}",
-        "N_PROCS"    : str(n_procs),
+        "OMEGA_RAD_S" : f"{omega:.4f}",
+        "V_INF_MS"    : f"{v_inf:.4f}",
+        "N_PROCS"     : str(n_procs),
+        "TURB_K"      : f"{turb_k:.6f}",
+        "TURB_OMEGA"  : f"{turb_omega:.4f}",
     }
     _substitute_in_dir(output_dir, substitutions)
 
@@ -196,7 +208,7 @@ if __name__ == "__main__":
                         choices=list(STL_MAP.keys()),
                         help="Propeller configuration")
     parser.add_argument("--case_type",   required=True,
-                        choices=["static_thrust", "wind_tunnel"],
+                        choices=["static_thrust", "wind_tunnel", "wind_tunnel_openjet"],
                         help="Simulation type")
     parser.add_argument("--rpm",         type=float, required=True,
                         help="Rotational speed [RPM]")
