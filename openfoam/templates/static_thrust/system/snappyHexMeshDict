@@ -43,6 +43,7 @@ castellatedMeshControls
     minRefinementCells  10;
     maxLoadUnbalance    0.10;
     nCellsBetweenLevels 2;
+    resolveFeatureAngle 30;
 
     features ();   // no explicit feature edges — snappy detects from STL
 
@@ -80,11 +81,14 @@ castellatedMeshControls
 
 snapControls
 {
-    nSmoothPatch    5;
-    tolerance       1.0;
-    nSolveIter      100;
-    nRelaxIter      5;
-    nFeatureSnapIter 10;
+    nSmoothPatch        5;
+    tolerance           1.0;
+    nSolveIter          100;
+    nRelaxIter          5;
+    nFeatureSnapIter    10;
+    implicitFeatureSnap false;
+    explicitFeatureSnap false;
+    multiRegionFeatureSnap false;
 }
 
 addLayersControls
@@ -95,8 +99,9 @@ addLayersControls
     minThickness     0.1;
     nGrow            0;
 
-    featureAngle     60;
-    nRelaxIter       5;
+    featureAngle        60;
+    slipFeatureAngle    30;
+    nRelaxIter          5;
     nSmoothSurfaceNormals 1;
     nSmoothNormals   3;
     nSmoothThickness 10;
@@ -137,7 +142,7 @@ meshQualityControls
 writeFlags
 (
     scalarLevels
-    meshQuality
+    layerSets
 );
 
 mergeTolerance 1e-6;
