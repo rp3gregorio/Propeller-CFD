@@ -66,8 +66,10 @@ castellatedMeshControls
     {
         rotatingCylinder
         {
-            mode inside;
-            levels ((1E15 3));
+            mode           inside;
+            levels         ((1E15 3));
+            cellZone       rotatingZone;    // creates the cellZone MRFProperties reads
+            cellZoneInside inside;
         }
 
         propeller
