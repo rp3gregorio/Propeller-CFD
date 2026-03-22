@@ -99,10 +99,12 @@ def read_forces(case_dir: str) -> tuple[float, float] | None:
             return None
 
         arr = np.array(data[-50:])  # last 50 iterations
-        # Total Fz = pressure Fz + viscous Fz
+        # Column layout: time (Fpx Fpy Fpz) (Fvx Fvy Fvz) (Mpx Mpy Mpz) (Mvx Mvy Mvz)
+        #                 0     1   2   3     4   5   6     7   8   9     10  11  12
+        # Total Fz = pressure Fz (col 3) + viscous Fz (col 6)
         Fz = arr[:, 3] + arr[:, 6]
-        # Total Mz = pressure Mz + viscous Mz
-        Mz = arr[:, 11] + arr[:, 12] if arr.shape[1] > 12 else arr[:, 11]
+        # Total Mz = pressure Mz (col 9) + viscous Mz (col 12)
+        Mz = arr[:, 9] + arr[:, 12] if arr.shape[1] > 12 else arr[:, 9]
 
         T = float(Fz.mean())
         Q = float(Mz.mean())
