@@ -137,7 +137,7 @@ meshQualityControls
 writeFlags
 (
     scalarLevels
-    meshQuality
+    layerSets
 );
 
 mergeTolerance 1e-6;
