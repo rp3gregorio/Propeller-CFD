@@ -299,5 +299,6 @@ class BEMTSolver:
         a_out = a.copy()
         high = a > 0.4
         CT_high = 8.0 / 9.0 + (4.0 * a[high] - 40.0 / 9.0) * a[high]
-        a_out[high] = (18.0 * a[high] - 20.0 - 3.0 * np.sqrt(CT_high * (50.0 - 36.0 * a[high]) + 12.0 * a[high] * (3.0 * a[high] - 4.0))) / (36.0 * a[high] - 50.0)
+        disc = np.maximum(CT_high * (50.0 - 36.0 * a[high]) + 12.0 * a[high] * (3.0 * a[high] - 4.0), 0.0)
+        a_out[high] = (18.0 * a[high] - 20.0 - 3.0 * np.sqrt(disc)) / (36.0 * a[high] - 50.0)
         return np.clip(a_out, 0, 0.9)
