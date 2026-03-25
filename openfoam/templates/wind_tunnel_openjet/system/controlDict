@@ -49,6 +49,9 @@ functions
         CofR            (0 0 0);
 
         log             true;
+
+        // Required so that 'postProcess -latestTime' loads U and p from disk
+        fields          (U p);
     }
 
     residuals
