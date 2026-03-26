@@ -191,15 +191,19 @@ def make_summary_figure(bemt_results, exp_data=None, output_path=None):
 def overlay_cfd(ax, cfd_df: pd.DataFrame, v_inf: float):
     """Overlay OpenFOAM CFD points on a thrust-vs-RPM plot."""
     subset = cfd_df[np.isclose(cfd_df["v_inf_ms"], v_inf, atol=0.5)]
+    any_plotted = False
     for name in CONFIG_ORDER:
         cfg = CONFIGS[name]
         rows = subset[subset["config"] == name]
         if not rows.empty:
             ax.scatter(
                 rows["rpm"], rows["T_gf"],
-                color=cfg["color"], marker="*", s=120,
-                zorder=6, label=f"{cfg['short_name']} (CFD)",
+                color=cfg["color"], marker="*", s=350,
+                edgecolors="black", linewidths=0.6,
+                zorder=6, label=f"{cfg['short_name']} (CFD ★)",
             )
+            any_plotted = True
+    return any_plotted
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -248,11 +252,16 @@ def main(source="bemt", runs_dir=None):
     # ── Figure 4: CFD overlay (if available) ────────────────────────
     if cfd_df is not None:
         fig4, axes4 = plt.subplots(2, 2, figsize=(13, 9))
-        fig4.suptitle("CFD (OpenFOAM ★) vs BEMT (lines) vs Experiment (○△□◇)")
+        fig4.suptitle("CFD (OpenFOAM ★) vs BEMT (lines) vs Experiment (○△□◇)",
+                      fontsize=13)
         for ax, v in zip(axes4.flat, WIND_SPEEDS):
             plot_thrust_vs_rpm(bemt_results, exp_data, v_inf=v, ax=ax)
-            overlay_cfd(ax, cfd_df, v)
-        plt.tight_layout()
+            has_cfd = overlay_cfd(ax, cfd_df, v)
+            # Refresh legend so CFD entries are included
+            ax.legend(fontsize=7.5, loc="upper left")
+            if has_cfd:
+                ax.set_title(ax.get_title() + "  ← CFD point here", fontsize=9.5)
+        fig4.tight_layout()
         fig4_path = os.path.join(PLOTS_DIR, "cfd_vs_bemt_vs_exp.png")
         fig4.savefig(fig4_path, dpi=150, bbox_inches="tight")
         print(f"  Saved: {fig4_path}")
